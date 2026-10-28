@@ -1,0 +1,26 @@
+{
+  "name": "staffsync-hr-management-system",
+  "private": true,
+  "version": "1.0.0",
+  "description": "StaffSync \u2014 full-stack MERN HR management system",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n API,WEB -c blue,green \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "npm --workspace server run dev",
+    "dev:client": "npm --workspace client run dev",
+    "build": "npm --workspace client run build",
+    "test": "npm --workspace server test && npm --workspace client test",
+    "lint": "npm --workspace server run lint && npm --workspace client run lint",
+    "seed": "npm --workspace server run seed",
+    "create-admin": "npm --workspace server run create-admin"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

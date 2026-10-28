@@ -1,0 +1,32 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
+import { rateLimit } from 'express-rate-limit';
+import { env } from './config/env.js';
+import { authenticate, verifyCsrf } from './middleware/auth.js';
+import authRoutes from './routes/authRoutes.js';
+import apiRoutes from './routes/apiRoutes.js';
+import { notFound, errorHandler } from './middleware/errorHandler.js';
+import mongoose from 'mongoose';
+
+const app = express();
+if (env.nodeEnv === 'production') app.set('trust proxy', 1);
+app.disable('x-powered-by');
+app.use(helmet());
+app.use(cors({ origin: env.clientUrl, credentials: true, methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'X-CSRF-Token'] }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: false, limit: '1mb' }));
+app.use(cookieParser());
+app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'));
+app.use('/api', rateLimit({ windowMs: 60 * 1000, limit: 240, standardHeaders: 'draft-8', legacyHeaders: false }));
+app.get('/api/health', (_req, res) => {
+  const connected = mongoose.connection.readyState === 1;
+  res.status(connected ? 200 : 503).json({ success: connected, data: { service: 'staffsync-api', database: connected ? 'connected' : 'disconnected', uptimeSeconds: Math.round(process.uptime()) } });
+});
+app.use('/api/auth', authRoutes);
+app.use('/api', authenticate, verifyCsrf, apiRoutes);
+app.use(notFound);
+app.use(errorHandler);
+export default app;

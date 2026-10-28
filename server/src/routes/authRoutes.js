@@ -1,0 +1,13 @@
+import { Router } from 'express';
+import { rateLimit } from 'express-rate-limit';
+import { authenticate, verifyCsrf } from '../middleware/auth.js';
+import { validateRequest } from '../middleware/validation.js';
+import { issueCsrf, login, logout, me, changePassword, loginValidators } from '../controllers/authController.js';
+const router = Router();
+const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false, message: { success: false, message: 'Too many login attempts. Try again later.' } });
+router.get('/csrf', issueCsrf);
+router.post('/login', loginLimiter, verifyCsrf, loginValidators, validateRequest, login);
+router.post('/logout', authenticate, verifyCsrf, logout);
+router.get('/me', authenticate, me);
+router.post('/change-password', authenticate, verifyCsrf, changePassword);
+export default router;

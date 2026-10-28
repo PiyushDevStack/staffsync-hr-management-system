@@ -1,0 +1,32 @@
+{
+  "info": {
+    "name": "StaffSync HR Management API",
+    "description": "Local test collection. Set baseUrl to the API origin. Browser UI is recommended for cookie + CSRF flows; for manual Postman state-changing requests, call /auth/csrf and copy the staffsync_csrf cookie value into X-CSRF-Token. Postman must retain cookies.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:5000/api" }, { "key": "email", "value": "hr@staffsync.local" }, { "key": "password", "value": "StaffSync@12345" }],
+  "item": [
+    { "name": "Health", "request": { "method": "GET", "url": "{{baseUrl}}/health" } },
+    { "name": "Auth", "item": [
+      { "name": "Get CSRF cookie", "request": { "method": "GET", "url": "{{baseUrl}}/auth/csrf" } },
+      { "name": "Login", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" }, "url": "{{baseUrl}}/auth/login" } },
+      { "name": "Current user", "request": { "method": "GET", "url": "{{baseUrl}}/auth/me" } },
+      { "name": "Logout", "request": { "method": "POST", "header": [{ "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "url": "{{baseUrl}}/auth/logout" } }
+    ]},
+    { "name": "Dashboard analytics", "request": { "method": "GET", "url": "{{baseUrl}}/analytics" } },
+    { "name": "Employees", "item": [
+      { "name": "List employees", "request": { "method": "GET", "url": "{{baseUrl}}/employees?page=1&limit=10" } },
+      { "name": "Create employee (edit body before sending)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Demo Person\",\n  \"employeeId\": \"SS-9001\",\n  \"email\": \"demo.person@staffsync.local\",\n  \"initialPassword\": \"ChangeMeNow@123\",\n  \"department\": \"Engineering\",\n  \"designation\": \"Developer\",\n  \"dateOfJoining\": \"2026-01-01\",\n  \"role\": \"EMPLOYEE\"\n}" }, "url": "{{baseUrl}}/employees" } }
+    ]},
+    { "name": "Attendance history", "request": { "method": "GET", "url": "{{baseUrl}}/attendance?limit=20" } },
+    { "name": "Leave requests", "item": [
+      { "name": "List leaves", "request": { "method": "GET", "url": "{{baseUrl}}/leaves?limit=20" } },
+      { "name": "Submit leave (employee account)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "X-CSRF-Token", "value": "{{csrfToken}}" }], "body": { "mode": "raw", "raw": "{\n  \"leaveType\": \"ANNUAL\",\n  \"startDate\": \"2026-11-02\",\n  \"endDate\": \"2026-11-03\",\n  \"reason\": \"Personal travel planned in advance.\"\n}" }, "url": "{{baseUrl}}/leaves" } }
+    ]},
+    { "name": "Announcements", "request": { "method": "GET", "url": "{{baseUrl}}/announcements" } },
+    { "name": "Training", "item": [
+      { "name": "List programs", "request": { "method": "GET", "url": "{{baseUrl}}/trainings" } }
+    ]},
+    { "name": "Notifications", "request": { "method": "GET", "url": "{{baseUrl}}/notifications" } }
+  ]
+}
